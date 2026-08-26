@@ -1,0 +1,33 @@
+.action-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.action-tabs button {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f7f9f8;
+  padding: 10px 13px;
+  font-weight: 750;
+}
+
+.action-tabs button.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: white;
+}
+
+.danger-button {
+  color: var(--danger);
+  background: #fff5f5 !important;
+  border-color: #e8caca !important;
+}
+
+.report-action {
+  border-top: 2px solid #dcece7;
+  margin-top: 22px;
+  padding-top: 4px;
+}

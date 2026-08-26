@@ -12,6 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="actions.css">
   <style>
     select{font:inherit;display:block;width:100%;margin-top:6px;border:1px solid #bccbc5;border-radius:11px;background:#fbfcfb;padding:12px;font-size:1rem;color:#17211e}
     .contact-form{display:grid;gap:12px}.contact-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
@@ -53,7 +54,15 @@
         <legend>Horaire de l'intervention</legend>
         <label><input type="radio" name="shift" value="05:00–13:00"> <span>5 h – 13 h</span></label>
         <label><input type="radio" name="shift" value="13:00–21:00"> <span>13 h – 21 h</span></label>
+        <label><input type="radio" name="shift" value="08:00–16:00"> <span>8 h – 16 h</span></label>
       </fieldset>
+
+      <div class="card action-manager">
+        <div class="section-heading"><div><h2 id="actionTitle">Action 1</h2><p>Ajoutez une action pour chaque dépannage ou travail d’atelier.</p></div><span id="actionCount">1</span></div>
+        <div id="actionTabs" class="action-tabs"></div>
+        <button id="addActionButton" class="action-button primary"><span>＋</span>Ajouter une action</button>
+        <button id="deleteActionButton" class="action-button danger-button">Supprimer cette action</button>
+      </div>
 
       <div class="card form-grid">
         <label>Site<input id="siteInput" autocomplete="organization"></label>
