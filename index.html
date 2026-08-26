@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123d35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Interventions">
+  <title>Rapports d'intervention</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header no-print">
+    <button id="backButton" class="icon-button hidden" aria-label="Retour">&#8592;</button>
+    <div>
+      <p class="eyebrow">SARL IMPEC</p>
+      <h1 id="screenTitle">Interventions</h1>
+    </div>
+    <span id="networkBadge" class="network-badge">Hors ligne</span>
+  </header>
+
+  <main>
+    <section id="homeScreen" class="screen active">
+      <div class="hero-card">
+        <p class="eyebrow">Technicien</p>
+        <h2>Pascal Valette</h2>
+        <p>Sous-traitance MAC CORMICK · Secteur Salé</p>
+      </div>
+      <button id="newReportButton" class="action-button primary"><span>＋</span>Nouveau rapport</button>
+      <button id="reportsButton" class="action-button"><span>▤</span>Mes rapports</button>
+      <button id="settingsButton" class="action-button"><span>⚙</span>Paramètres</button>
+      <p id="draftNotice" class="notice hidden"></p>
+    </section>
+
+    <section id="editorScreen" class="screen">
+      <div class="status-row">
+        <span id="reportStatus" class="status-pill">BROUILLON</span>
+        <span id="saveState">Sauvegardé</span>
+      </div>
+
+      <fieldset class="card shift-picker">
+        <legend>Horaire de l'intervention</legend>
+        <label><input type="radio" name="shift" value="05:00–13:00"> <span>5 h – 13 h</span></label>
+        <label><input type="radio" name="shift" value="13:00–21:00"> <span>13 h – 21 h</span></label>
+      </fieldset>
+
+      <div class="card form-grid">
+        <label>Site<input id="siteInput" autocomplete="organization"></label>
+        <label>Machine / équipement<input id="machineInput" autocomplete="off"></label>
+        <label>N° d'intervention<input id="numberInput" autocomplete="off"></label>
+      </div>
+
+      <div class="card voice-card">
+        <h2>Compte rendu</h2>
+        <p>Parlez naturellement. Le texte est toujours conservé avant reformulation.</p>
+        <button id="dictateButton" class="action-button primary mic-button"><span>●</span><span id="dictateLabel">Commencer la dictée</span></button>
+        <textarea id="rawTextInput" rows="7" placeholder="Votre dictée apparaîtra ici. Vous pouvez aussi saisir ou corriger le texte au clavier."></textarea>
+        <button id="reformulateButton" class="action-button accent"><span>✦</span>Reformuler avec l'IA</button>
+        <p id="aiMessage" class="helper"></p>
+      </div>
+
+      <div class="card sections-card">
+        <h2>Rapport structuré</h2>
+        <label>Constat<textarea data-field="observation" rows="3"></textarea></label>
+        <label>Diagnostic<textarea data-field="diagnosis" rows="3"></textarea></label>
+        <label>Intervention<textarea data-field="work" rows="4"></textarea></label>
+        <label>Pièces remplacées<textarea data-field="parts" rows="2"></textarea></label>
+        <label>Essais / Résultat<textarea data-field="tests" rows="3"></textarea></label>
+        <label>Remarques<textarea data-field="notes" rows="2"></textarea></label>
+      </div>
+
+      <div class="card">
+        <div class="section-heading"><div><h2>Photos</h2><p>Les copies sont redimensionnées et compressées.</p></div><span id="photoCount">0</span></div>
+        <label class="action-button file-button"><span>▧</span>Ajouter des photos<input id="photoInput" type="file" accept="image/*" capture="environment" multiple></label>
+        <div id="photoList" class="photo-list"></div>
+      </div>
+
+      <div class="editor-actions no-print">
+        <button id="previewButton" class="action-button"><span>▣</span>Aperçu / PDF</button>
+        <button id="closeReportButton" class="action-button success"><span>✓</span>Clôturer le rapport</button>
+      </div>
+    </section>
+
+    <section id="reportsScreen" class="screen">
+      <label class="search-box">Rechercher<input id="searchInput" type="search" placeholder="Date, site, machine, mot-clé…"></label>
+      <div id="reportsList" class="reports-list"></div>
+    </section>
+
+    <section id="settingsScreen" class="screen">
+      <div class="card settings-form">
+        <label>Société<input data-setting="company"></label>
+        <label>Technicien<input data-setting="technician"></label>
+        <label>Donneur d'ordre<input data-setting="client"></label>
+        <label>Secteur<input data-setting="sector"></label>
+        <label>Adresse Gmail d'envoi<input data-setting="senderEmail" type="email" placeholder="À renseigner plus tard"></label>
+        <label>Responsable destinataire<input data-setting="recipientEmail" type="email" placeholder="À renseigner plus tard"></label>
+        <label>Adresse de l'API IA<input data-setting="aiEndpoint" type="url" placeholder="/api/reformulate"></label>
+        <button id="saveSettingsButton" class="action-button primary">Enregistrer les paramètres</button>
+      </div>
+      <div class="card">
+        <h2>Sauvegarde</h2>
+        <p>Exportez une copie complète des rapports pour la conserver ailleurs.</p>
+        <button id="exportButton" class="action-button">Exporter la sauvegarde</button>
+        <label class="action-button file-button">Restaurer une sauvegarde<input id="importInput" type="file" accept="application/json"></label>
+      </div>
+    </section>
+
+    <section id="previewScreen" class="screen report-paper">
+      <div id="printReport"></div>
+      <div class="preview-actions no-print">
+        <button id="printButton" class="action-button primary">Créer / imprimer le PDF</button>
+        <button id="shareButton" class="action-button">Partager</button>
+        <button id="emailButton" class="action-button">Envoyer par e-mail</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <h2 id="dialogTitle">Confirmation</h2>
+      <p id="dialogText"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="action-button">Annuler</button>
+        <button value="confirm" class="action-button primary">Confirmer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

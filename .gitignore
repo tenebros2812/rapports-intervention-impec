@@ -1,0 +1,14 @@
+# Fichiers de travail et livrables temporaires Codex
+work/
+outputs/
+
+# Configuration locale et secrets
+.env
+.env.*
+!.env.example
+
+# Fichiers système et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

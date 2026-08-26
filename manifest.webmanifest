@@ -1,0 +1,11 @@
+{
+  "name": "Rapports d'intervention SARL IMPEC",
+  "short_name": "Interventions",
+  "description": "Rapports d'intervention technique de Pascal Valette",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f2f5f3",
+  "theme_color": "#123d35",
+  "lang": "fr",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
