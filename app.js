@@ -2,7 +2,8 @@ const STORAGE_KEY='impec-reports-v1';
 const SETTINGS_KEY='impec-settings-v1';
 const GOOGLE_CLIENT_ID='907012528939-ginsjr0qvr4cugot9eup9tvai3pnvh9u.apps.googleusercontent.com';
 const GMAIL_SCOPE='https://www.googleapis.com/auth/gmail.send';
-const defaultSettings={company:'SARL IMPEC',technician:'Pascal Valette',client:'MAC CORMICK',sector:'Salé',senderEmail:'',ccEmail:'',aiEndpoint:'/api/reformulate',contacts:[]};
+const DEFAULT_AI_ENDPOINT='https://rapports-intervention-impec.vercel.app/api/reformulate';
+const defaultSettings={company:'SARL IMPEC',technician:'Pascal Valette',client:'MAC CORMICK',sector:'Salé',senderEmail:'',ccEmail:'',aiEndpoint:DEFAULT_AI_ENDPOINT,contacts:[]};
 const state={reports:[],settings:{...defaultSettings},current:null,screen:'homeScreen',recognition:null,listening:false,dictationMode:'native'};
 let gmailAccessToken='';
 let gmailTokenClient=null;
@@ -14,7 +15,7 @@ const formatDate=value=>new Intl.DateTimeFormat('fr-FR',{dateStyle:'short',timeS
 const escapeHtml=value=>String(value||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const textToHtml=value=>escapeHtml(value).replace(/\n/g,'<br>');
 
-function normalizeSettings(saved={}){const settings={...defaultSettings,...saved};settings.contacts=Array.isArray(saved.contacts)?saved.contacts:[];if(saved.recipientEmail&&!settings.contacts.some(contact=>contact.email.toLowerCase()===saved.recipientEmail.toLowerCase()))settings.contacts.push({id:uid(),name:'Responsable',email:saved.recipientEmail});return settings}
+function normalizeSettings(saved={}){const settings={...defaultSettings,...saved};if(!settings.aiEndpoint||settings.aiEndpoint==='/api/reformulate')settings.aiEndpoint=DEFAULT_AI_ENDPOINT;settings.contacts=Array.isArray(saved.contacts)?saved.contacts:[];if(saved.recipientEmail&&!settings.contacts.some(contact=>contact.email.toLowerCase()===saved.recipientEmail.toLowerCase()))settings.contacts.push({id:uid(),name:'Responsable',email:saved.recipientEmail});return settings}
 function load(){
   try{state.reports=JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch{state.reports=[]}
   try{state.settings=normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY))||{})}catch{state.settings=normalizeSettings()}
