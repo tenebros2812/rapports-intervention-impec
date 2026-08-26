@@ -1,7 +1,7 @@
 const STORAGE_KEY='impec-reports-v1';
 const SETTINGS_KEY='impec-settings-v1';
 const defaultSettings={company:'SARL IMPEC',technician:'Pascal Valette',client:'MAC CORMICK',sector:'Salé',senderEmail:'',recipientEmail:'',aiEndpoint:'/api/reformulate'};
-const state={reports:[],settings:{...defaultSettings},current:null,screen:'homeScreen',recognition:null,listening:false};
+const state={reports:[],settings:{...defaultSettings},current:null,screen:'homeScreen',recognition:null,listening:false,dictationMode:'native'};
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -25,8 +25,30 @@ function saveEditor(){const r=state.current;if(!r)return;r.shift=$('input[name="
 function renderPhotos(){const r=state.current;$('#photoCount').textContent=r.photos.length;$('#photoList').innerHTML=r.photos.map((p,i)=>`<div class="photo-card"><img src="${p.data}" alt="Photo ${i+1}"><input data-caption="${i}" value="${escapeHtml(p.caption)}" placeholder="Légende facultative"><button data-remove-photo="${i}">Supprimer</button></div>`).join('')}
 async function compressPhoto(file){const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});const img=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=data});const max=1600;const scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return{data:canvas.toDataURL('image/jpeg',.78),caption:'',name:file.name}}
 async function addPhotos(files){for(const file of files){try{state.current.photos.push(await compressPhoto(file))}catch(e){alert(`Photo impossible à importer : ${file.name}`)}}saveEditor();renderPhotos()}
-function setupDictation(){const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){$('#dictateButton').disabled=true;$('#dictateLabel').textContent='Dictée non disponible dans ce navigateur';return}const recognition=new SpeechRecognition();recognition.lang='fr-FR';recognition.continuous=true;recognition.interimResults=true;let base='';recognition.onstart=()=>{state.listening=true;base=$('#rawTextInput').value.trim();$('#dictateButton').classList.add('listening');$('#dictateLabel').textContent='Arrêter la dictée'};recognition.onresult=event=>{let finalText='',interim='';for(let i=event.resultIndex;i<event.results.length;i++){const text=event.results[i][0].transcript;if(event.results[i].isFinal)finalText+=`${text} `;else interim+=text}if(finalText)base=`${base} ${finalText}`.trim();$('#rawTextInput').value=`${base}${interim?' '+interim:''}`;saveEditor()};recognition.onend=()=>{state.listening=false;$('#dictateButton').classList.remove('listening');$('#dictateLabel').textContent='Commencer la dictée';saveEditor()};recognition.onerror=e=>{$('#aiMessage').textContent=`Dictée interrompue : ${e.error}`};state.recognition=recognition}
-function toggleDictation(){if(!state.recognition)return;if(state.listening)state.recognition.stop();else state.recognition.start()}
+function setupDictation(){
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isStandalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  // WebKit expose parfois l'API sans qu'elle fonctionne dans une PWA installée.
+  if(!SpeechRecognition||(isIOS&&isStandalone)){
+    state.dictationMode='native';
+    $('#dictateLabel').textContent='Ouvrir la dictée iPhone';
+    $('#dictationHelp').textContent='Touchez ce bouton, puis le micro du clavier iPhone.';
+    return;
+  }
+  try{
+    const recognition=new SpeechRecognition();
+    recognition.lang='fr-FR';recognition.continuous=true;recognition.interimResults=true;
+    let base='';
+    recognition.onstart=()=>{state.listening=true;base=$('#rawTextInput').value.trim();$('#dictateButton').classList.add('listening');$('#dictateLabel').textContent='Arrêter la dictée';$('#dictationHelp').textContent='Je vous écoute…'};
+    recognition.onresult=event=>{let finalText='',interim='';for(let i=event.resultIndex;i<event.results.length;i++){const text=event.results[i][0].transcript;if(event.results[i].isFinal)finalText+=`${text} `;else interim+=text}if(finalText)base=`${base} ${finalText}`.trim();$('#rawTextInput').value=`${base}${interim?' '+interim:''}`;saveEditor()};
+    recognition.onend=()=>{state.listening=false;$('#dictateButton').classList.remove('listening');$('#dictateLabel').textContent='Dicter l’intervention';$('#dictationHelp').textContent='';saveEditor()};
+    recognition.onerror=e=>{state.listening=false;$('#dictateButton').classList.remove('listening');state.dictationMode='native';$('#dictateLabel').textContent='Ouvrir la dictée iPhone';$('#dictationHelp').textContent='La reconnaissance intégrée est indisponible. Touchez le micro du clavier iPhone.';$('#aiMessage').textContent=e.error==='not-allowed'?'Autorisez le microphone, ou utilisez le micro du clavier iPhone.':'La dictée directe est indisponible sur cet appareil. Votre rapport reste sauvegardé.'};
+    state.recognition=recognition;state.dictationMode='webspeech';
+  }catch{state.dictationMode='native';$('#dictateLabel').textContent='Ouvrir la dictée iPhone';$('#dictationHelp').textContent='Touchez ce bouton, puis le micro du clavier iPhone.'}
+}
+function openNativeDictation(){const input=$('#rawTextInput');input.focus({preventScroll:false});input.setSelectionRange(input.value.length,input.value.length);$('#dictationHelp').textContent='Le clavier est ouvert : touchez son bouton micro pour parler.'}
+function toggleDictation(){if(state.dictationMode==='native'||!state.recognition){openNativeDictation();return}try{if(state.listening)state.recognition.stop();else state.recognition.start()}catch{state.dictationMode='native';openNativeDictation()}}
 async function reformulate(){saveEditor();const raw=state.current.rawText;if(!raw){$('#aiMessage').textContent='Dictez ou saisissez d’abord votre intervention.';return}if(!navigator.onLine){$('#aiMessage').textContent='Texte conservé. La reformulation nécessite une connexion.';return}$('#reformulateButton').disabled=true;$('#aiMessage').textContent='Reformulation en cours…';try{const response=await fetch(state.settings.aiEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:raw,sections:['observation','diagnosis','work','parts','tests','notes']})});if(!response.ok)throw new Error('service indisponible');const result=await response.json();['observation','diagnosis','work','parts','tests','notes'].forEach(key=>{if(typeof result[key]==='string')state.current[key]=result[key]});fillEditor();persist();$('#aiMessage').textContent='Reformulation terminée. Vérifiez les informations techniques.'}catch{$('#aiMessage').textContent='IA non configurée ou indisponible. La dictée originale est conservée sans perte.'}finally{$('#reformulateButton').disabled=false}}
 function closeReport(){saveEditor();openConfirm('Clôturer le rapport','Le rapport restera modifiable. Toute correction ultérieure créera automatiquement une nouvelle version.',()=>{state.current.status='CLÔTURÉ';state.current.closedAt=nowIso();state.current.history.push({action:'cloture',date:nowIso(),version:state.current.version});persist();fillEditor();renderPreview();showScreen('previewScreen','Rapport clôturé')})}
 function ensureRevision(){if(state.current.status==='BROUILLON')return;state.current.history.push({action:'revision',date:nowIso(),fromVersion:state.current.version});state.current.version+=1;state.current.status='BROUILLON';state.current.closedAt=null;persist()}

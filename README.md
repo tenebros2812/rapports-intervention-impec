@@ -18,6 +18,7 @@ Puis ouvrir `http://localhost:8080`. Pour un iPhone, le site devra être servi e
 - Aucune clé d'API ni aucun mot de passe Gmail n'est stocké dans le code.
 - La reformulation appelle l'URL configurée dans Paramètres, par défaut `/api/reformulate`.
 - Tant que ce service n'est pas raccordé, la dictée originale reste enregistrée et aucune donnée n'est perdue.
+- Dans la PWA installée sur iPhone, le bouton de dictée ouvre le champ puis utilise le micro du clavier iOS. Safari ne garantit pas l'API Web Speech dans une application ajoutée à l'écran d'accueil.
 
 ## Contrat attendu pour l'API IA
 
