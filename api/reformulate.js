@@ -66,7 +66,10 @@ export default async function handler(req, res) {
     });
 
     const payload = await response.json();
-    if (!response.ok) return res.status(502).json({ error: 'La reformulation IA a échoué.' });
+    if (!response.ok) {
+      const detail = payload?.error?.message || payload?.error?.code || `Erreur OpenAI ${response.status}`;
+      return res.status(502).json({ error: detail });
+    }
     const outputText = payload.output?.flatMap(item => item.content || []).find(part => part.type === 'output_text')?.text;
     if (!outputText) return res.status(502).json({ error: 'Réponse IA vide.' });
     return res.status(200).json(JSON.parse(outputText));
