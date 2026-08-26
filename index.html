@@ -12,6 +12,12 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    select{font:inherit;display:block;width:100%;margin-top:6px;border:1px solid #bccbc5;border-radius:11px;background:#fbfcfb;padding:12px;font-size:1rem;color:#17211e}
+    .contact-form{display:grid;gap:12px}.contact-item{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--border)}
+    .contact-item div{min-width:0;flex:1}.contact-item strong,.contact-item span{display:block;overflow-wrap:anywhere}.contact-item span{font-size:.82rem;color:#5b6d66}
+    .contact-item button{border:0;border-radius:9px;background:#f8e0e0;color:var(--danger);padding:9px;font-weight:700}
+  </style>
 </head>
 <body>
   <header class="app-header no-print">
@@ -52,6 +58,8 @@
         <label>Site<input id="siteInput" autocomplete="organization"></label>
         <label>Machine / équipement<input id="machineInput" autocomplete="off"></label>
         <label>N° d'intervention<input id="numberInput" autocomplete="off"></label>
+        <label>Destinataire<select id="recipientSelect"></select></label>
+        <label>Copie à<input id="ccInput" type="email" readonly></label>
       </div>
 
       <div class="card voice-card">
@@ -97,10 +105,20 @@
         <label>Technicien<input data-setting="technician"></label>
         <label>Donneur d'ordre<input data-setting="client"></label>
         <label>Secteur<input data-setting="sector"></label>
-        <label>Adresse Gmail d'envoi<input data-setting="senderEmail" type="email" placeholder="À renseigner plus tard"></label>
-        <label>Responsable destinataire<input data-setting="recipientEmail" type="email" placeholder="À renseigner plus tard"></label>
+        <label>Adresse Gmail d'envoi<input data-setting="senderEmail" type="email"></label>
+        <label>Adresse mise en copie<input data-setting="ccEmail" type="email"></label>
         <label>Adresse de l'API IA<input data-setting="aiEndpoint" type="url" placeholder="/api/reformulate"></label>
         <button id="saveSettingsButton" class="action-button primary">Enregistrer les paramètres</button>
+      </div>
+      <div class="card">
+        <h2>Destinataires</h2>
+        <p>Ces contacts seront proposés dans le menu de chaque rapport.</p>
+        <div class="contact-form">
+          <label>Nom / service<input id="contactNameInput" placeholder="Responsable maintenance"></label>
+          <label>Adresse e-mail<input id="contactEmailInput" type="email" placeholder="nom@entreprise.com"></label>
+        </div>
+        <button id="addContactButton" class="action-button">Ajouter ce destinataire</button>
+        <div id="contactsList" class="contacts-list"></div>
       </div>
       <div class="card">
         <h2>Sauvegarde</h2>
